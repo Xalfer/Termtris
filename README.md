@@ -1,2 +1,4 @@
 # Termtris
-Tetris clone written in C++ using the PDCurses library. This is my first big project and also plese remember that I am a beginner and don't have much expirience.
+Tetris clone written in C++ using the PDCurses library. 
+### please do keep in mind
+That this is my first bigger project and that I am a beginner and don't have much expirience.
