@@ -1,4 +1,5 @@
 #include <conio.h>
+#include <cstdlib>
 #include <time.h>
 #include "header.h"
 #include "shapes.cpp"
@@ -29,6 +30,7 @@ bool canMove(piece, direction);
 bool canRotate(piece, direction);
 void clearPiece(piece);
 void block(piece);
+void newPiece(piece*);
 
 void logic()
 {
@@ -98,7 +100,18 @@ void logic()
 	}
 
 
-
+	clearPiece(tetromino);
+	for (int y = 0; y < 4; y++)
+		for (int x = 0; x < 4; x++)
+			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && playfieldArr[tetromino.y  + y + 1][tetromino.x + x] == 'o' || shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && tetromino.y + y + 1 == PLAYFIELD_Y)
+			{
+				block(tetromino);
+				tetromino.y = -1;
+				tetromino.x = 3;
+				newPiece(&tetromino);
+			}
+	block(tetromino);
+	
 	return;
 }
 
@@ -223,7 +236,7 @@ void startGame()
 {
 	tetromino.y = -1;
 	tetromino.x = 3;
-	tetromino.shape = 6;
+	newPiece(&tetromino);
 	block(tetromino);
 	drawPlayfield();
 	time(&lastFall);
@@ -263,4 +276,14 @@ void block(piece tetromino)
 		for (int x = 0; x < 4; x++)
 			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o')
 				playfieldArr[tetromino.y + y][tetromino.x + x] = shapeArr[tetromino.shape][tetromino.rotation][y][x];
+}
+
+
+void newPiece(piece *tetromino)
+{
+	std::srand(time(0));
+
+	tetromino -> shape = rand() % 7;
+
+	return;
 }
