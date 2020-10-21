@@ -1,9 +1,8 @@
 ﻿#include "header.h"
 #include "shapes.cpp"
 
-class wins
+struct wins
 {
-public:
 	int height, width, pos_y, pos_x;
 
 	WINDOW* win;
@@ -11,9 +10,7 @@ public:
 
 char playfieldArr[PLAYFIELD_Y][PLAYFIELD_X] = {};
 
-
 wins playfield;
-
 
 
 void drawPlayfield() //this function is used for resizing and drawing the windows
@@ -74,19 +71,6 @@ void updatePlayfield() //this function is used for updating the playfield
 	}	
 	wrefresh(playfield.win);
 	refresh();
-}
-
-void initColour() 
-{
-	init_color(8, 100, 0, 0);
-
-	init_pair(1, 3, 2);
-	init_pair(2, COLOR_BLUE, COLOR_GREEN);
-	init_pair(3, COLOR_WHITE, COLOR_WHITE);
-	init_pair(4, COLOR_BLACK, COLOR_YELLOW);
-	init_pair(5, COLOR_BLACK, COLOR_GREEN);
-	init_pair(6, COLOR_BLACK, COLOR_MAGENTA);
-	init_pair(7, COLOR_BLACK, COLOR_RED);
 }
 
 void checkWindow()

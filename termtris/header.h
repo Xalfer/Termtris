@@ -8,7 +8,6 @@ void checkWindow();
 void drawPlayfield();
 void updatePlayfield();
 void clearPlayfield();
-void initColour();
 void logic();
 void fall();
 void startGame();

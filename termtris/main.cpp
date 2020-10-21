@@ -12,19 +12,7 @@ int main()
 	
 	checkWindow();
 
-	//start_color();
-	//initColour();
-
 	startGame();
-
-	while (isPlay)
-	{	
-		
-		logic();
-		//fall();
-
-		updatePlayfield();
-	}
 	
 	//some random stuff so the window won't close right after you hit esc
 	clear();
