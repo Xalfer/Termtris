@@ -18,13 +18,6 @@ wins playfield;
 
 void drawPlayfield() //this function is used for resizing and drawing the windows
 {
-	playfieldArr[10][5] = 'o';
-	if (LINES < 22 || COLS < 12)
-	{
-		mvprintw(LINES / 2, (COLS - 24) / 2, "your window is too small");
-		return;
-	}
-
 	border(ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 
 	wins border;
@@ -83,31 +76,6 @@ void updatePlayfield() //this function is used for updating the playfield
 	refresh();
 }
 
-void clearPlayfield() //this function is used to clear the playfield
-{
-	for (int y = 0; y < PLAYFIELD_Y; y++)
-	{
-		for (int x = 0; x < PLAYFIELD_X; x++)
-			playfieldArr[y][x] = ' ';
-	}
-}
-
-void clearPiece(piece tetromino) 
-{
-	for (int y = 0; y < 4; y++)
-		for (int x = 0; x < 4; x++)
-			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o')
-				playfieldArr[tetromino.y + y][tetromino.x + x] = ' ';
-}
-
-void block(piece tetromino)
-{
-	for (int y = 0; y < 4; y++)
-		for (int x = 0; x < 4; x++)
-			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o')
-				playfieldArr[tetromino.y + y][tetromino.x + x] = shapeArr[tetromino.shape][tetromino.rotation][y][x];
-}
-
 void initColour() 
 {
 	init_color(8, 100, 0, 0);
@@ -121,3 +89,13 @@ void initColour()
 	init_pair(7, COLOR_BLACK, COLOR_RED);
 }
 
+void checkWindow()
+{
+	if (LINES < 22 || COLS < 12)
+	{
+		mvprintw(LINES / 2, (COLS - 24) / 2, "your window is too small");
+		endwin();
+		return;
+	}
+	return;
+}

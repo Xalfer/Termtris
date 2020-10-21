@@ -1,8 +1,6 @@
 #include <time.h>
 #include "header.h" 
 
-bool isPlay;
-
 int main()
 {
 	initscr();
@@ -12,14 +10,13 @@ int main()
 	keypad(stdscr,TRUE);
 	curs_set(0);
 	
+	checkWindow();
+
 	//start_color();
 	//initColour();
 
 	startGame();
 
-	isPlay = TRUE;
-	time(&lastFall);
-	
 	while (isPlay)
 	{	
 		
