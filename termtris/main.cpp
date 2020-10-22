@@ -1,5 +1,5 @@
 #include <time.h>
-#include "header.h" 
+#include "main.h" 
 
 int main()
 {
@@ -7,7 +7,7 @@ int main()
 	noecho();
 	raw();
 	cbreak();
-	keypad(stdscr,TRUE);
+	keypad(stdscr,true);
 	curs_set(0);
 	
 	checkWindow();

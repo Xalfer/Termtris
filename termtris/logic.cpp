@@ -106,8 +106,9 @@ void logic()
 			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && playfieldArr[tetromino.y  + y + 1][tetromino.x + x] == 'o' || shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && tetromino.y + y + 1 == PLAYFIELD_Y)
 			{
 				block(tetromino);
-				tetromino.y = -1;
-				tetromino.x = 3;
+
+				clearLines(tetromino.y);
+
 				newPiece(&tetromino);
 			}
 	block(tetromino);
@@ -204,7 +205,7 @@ bool canRotate(piece tetromino, direction rotation)
 			{
 				for (int x = 0; x < 4; x++)
 				{
-					if (shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == 'o' && (tetromino.x + x == PLAYFIELD_X || tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y) || shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x] == 'o')
+					if (shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == 'o' && (tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y ||tetromino.x + x == PLAYFIELD_X) || shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x] == 'o')
 					{
 						return false;
 					}
@@ -217,7 +218,7 @@ bool canRotate(piece tetromino, direction rotation)
 			{
 				for (int x = 0; x < 4; x++)
 				{
-					if (shapeArr[tetromino.shape][3][y][x] == 'o' && (tetromino.x + x == PLAYFIELD_X || tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y ) || shapeArr[tetromino.shape][3][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x] == 'o')
+					if (shapeArr[tetromino.shape][3][y][x] == 'o' && (tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y || tetromino.x + x == PLAYFIELD_X) || shapeArr[tetromino.shape][3][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x] == 'o')
 					{
 						return false;
 					}
@@ -245,8 +246,8 @@ void startGame()
 	while (isPlay)
 	{
 
+		fall();
 		logic();
-		//fall();
 
 		updatePlayfield();
 	}
@@ -281,6 +282,9 @@ void block(piece tetromino)
 
 void newPiece(piece *tetromino)
 {
+	tetromino -> y = -1;
+	tetromino -> x = 3;
+
 	std::srand(time(0));
 
 	tetromino -> shape = rand() % 7;
