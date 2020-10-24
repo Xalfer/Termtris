@@ -15,7 +15,6 @@ using namespace std::chrono_literals;
 
 
 bool isPlay, isBlock;
-
 struct piece
 {
 	int shape = 0, rotation = 0, y = 0, x = 0;
@@ -28,7 +27,8 @@ enum direction
 	right
 };
 
-steady_clock::time_point lastFall,shouldPlace, now;
+steady_clock::time_point lastFall, shouldPlace, now;
+piece tetromino;
 
 
 bool canMove(piece, direction);
@@ -107,22 +107,23 @@ void logic(piece *tetromino)
 	return;
 }
 
-void fall(piece *tetromino) 
+void fall() 
 {
+	clearPiece(tetromino);
+	
 	now = steady_clock::now();
 	duration<float, milli> diffTime = now - lastFall;
-	if (diffTime >= 1s && canMove(*tetromino, down))
+	if (diffTime >= 1000ms && canMove(tetromino, down))
 	{
-		clearPiece(*tetromino);
 
-		tetromino->y++;
+		tetromino.y++;
 
-		block(*tetromino);
 
 		lastFall = steady_clock::now();
 		return;
 	}
 	
+	block(tetromino);
 	return;
 }
 
@@ -143,16 +144,15 @@ void lock(piece *tetromino)
 	else
 	{
 		clearPiece(*tetromino);
-		for (int y = 0; y < 4; y++)
-			for (int x = 0; x < 4; x++)
-				if (!canMove(*tetromino, down))
-				{
-					isBlock = true;
-				}
-				else
-				{
-					shouldPlace = steady_clock::now();
-				}
+		
+		if (!canMove(*tetromino, down))
+		{
+			isBlock = true;
+		}
+		else
+		{
+			shouldPlace = steady_clock::now();
+		}
 		block(*tetromino);
 	}
 	return;
@@ -260,7 +260,7 @@ bool canRotate(piece tetromino, direction rotation) //this function checks if yo
 
 void startGame() 
 {
-	piece tetromino;
+	
 	tetromino.y = -1;
 	tetromino.x = 3;
 	tetromino.rotation = 0;
@@ -272,7 +272,7 @@ void startGame()
 	isPlay = TRUE;
 	while (isPlay)
 	{
-		fall(&tetromino);
+		fall();
 		logic(&tetromino);
 		lock(&tetromino);
 
