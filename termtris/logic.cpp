@@ -1,6 +1,6 @@
 #include <conio.h>
 #include <cstdlib>
-#include <time.h>
+#include <chrono>
 #include "header.h"
 #include "shapes.cpp"
 
@@ -9,14 +9,17 @@
 #define KEY_Z		0x7a
 #define KEY_SPACE	0x20 
 
+using namespace std;
+using namespace std::chrono;
+using namespace std::chrono_literals;
+
+
+bool isPlay, isBlock;
+
 struct piece
 {
 	int shape = 0, rotation = 0, y = 0, x = 0;
 };
-
-time_t lastFall, now;
-piece tetromino;
-bool isPlay;
 
 enum direction 
 {
@@ -25,6 +28,8 @@ enum direction
 	right
 };
 
+steady_clock::time_point lastFall,shouldPlace, now;
+
 
 bool canMove(piece, direction);
 bool canRotate(piece, direction);
@@ -32,8 +37,9 @@ void clearPiece(piece);
 void block(piece);
 void newPiece(piece*);
 
-void logic()
+void logic(piece *tetromino)
 {
+
 	int input = 0;
 	if (_kbhit())
 		input = getch();
@@ -41,51 +47,51 @@ void logic()
 	switch (input)
 	{
 	case KEY_LEFT:
-		clearPiece(tetromino);
+		clearPiece(*tetromino);
 
-		if (canMove(tetromino, left))
-			tetromino.x--;
+		if (canMove(*tetromino, left))
+			tetromino->x--;
 
-		block(tetromino);
+		block(*tetromino);
 		break;
 	case KEY_RIGHT:
-		clearPiece(tetromino);
+		clearPiece(*tetromino);
 
-		if (canMove(tetromino, right))
-			tetromino.x++;
+		if (canMove(*tetromino, right))
+			tetromino->x++;
 
-		block(tetromino);
+		block(*tetromino);
 		break;
 	case KEY_DOWN:
-		clearPiece(tetromino);
+		clearPiece(*tetromino);
 
-		if (canMove(tetromino, down))
-			tetromino.y++;
+		if (canMove(*tetromino, down))
+			tetromino->y++;
 
-		block(tetromino);
+		block(*tetromino);
 		break;
 	case KEY_C:
-		clearPiece(tetromino);
-		if (canRotate(tetromino, right))
+		clearPiece(*tetromino);
+		if (canRotate(*tetromino, right))
 		{
-			if (tetromino.rotation > 0)
-				tetromino.rotation--;
+			if (tetromino->rotation > 0)
+				tetromino->rotation--;
 			else
-				tetromino.rotation = 3;
+				tetromino->rotation = 3;
 		}
-		block(tetromino);
+		block(*tetromino);
 		break;
 	case KEY_Z:
-		clearPiece(tetromino);
+		clearPiece(*tetromino);
 
-		if (canRotate(tetromino, left))
+		if (canRotate(*tetromino, left))
 		{
-			if (tetromino.rotation < 3)
-				tetromino.rotation++;
+			if (tetromino->rotation < 3)
+				tetromino->rotation++;
 			else
-				tetromino.rotation = 0;
+				tetromino->rotation = 0;
 		}
-		block(tetromino);
+		block(*tetromino);
 		break;
 	//case KEY_SPACE:
 	//	for(int y = 0;)
@@ -98,38 +104,57 @@ void logic()
 	default:
 		break;
 	}
+	return;
+}
 
+void fall(piece *tetromino) 
+{
+	now = steady_clock::now();
+	duration<float, milli> diffTime = now - lastFall;
+	if (diffTime >= 1s && canMove(*tetromino, down))
+	{
+		clearPiece(*tetromino);
 
-	clearPiece(tetromino);
-	for (int y = 0; y < 4; y++)
-		for (int x = 0; x < 4; x++)
-			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && playfieldArr[tetromino.y  + y + 1][tetromino.x + x] == 'o' || shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && tetromino.y + y + 1 == PLAYFIELD_Y)
-			{
-				block(tetromino);
+		tetromino->y++;
 
-				clearLines(tetromino.y);
+		block(*tetromino);
 
-				newPiece(&tetromino);
-			}
-	block(tetromino);
+		lastFall = steady_clock::now();
+		return;
+	}
 	
 	return;
 }
 
-void fall() 
+void lock(piece *tetromino)
 {
-	time(&now);
-	if (difftime(now, lastFall) == 1 && tetromino.y < PLAYFIELD_Y - 4)
+	now = steady_clock::now();
+	duration<float, milli> diffTime = now - shouldPlace;
+	if (isBlock && diffTime >= 250ms)
 	{
-		clearPiece(tetromino);
+		block(*tetromino);
 
-		tetromino.y++;
+		clearLines(tetromino->y);
 
-		block(tetromino);
-		
-		lastFall = now;
+		newPiece(&*tetromino);
+		isBlock = false;
+
 	}
-
+	else
+	{
+		clearPiece(*tetromino);
+		for (int y = 0; y < 4; y++)
+			for (int x = 0; x < 4; x++)
+				if (!canMove(*tetromino, down))
+				{
+					isBlock = true;
+				}
+				else
+				{
+					shouldPlace = steady_clock::now();
+				}
+		block(*tetromino);
+	}
 	return;
 }
 
@@ -140,21 +165,21 @@ bool canMove(piece tetromino, direction dir) //this function checks if you can m
 	case left:
 		for (int y = 0; y < 4; y++)
 			for (int x = 0; x < 4; x++)
-				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && tetromino.x  + x == 0 || shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x - 1] == 'o')
+				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && tetromino.x  + x == 0 || shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x - 1] == '#')
 					return false;
 		return true;
 		break;
 	case right:
 		for (int y = 0; y < 4; y++)
 			for (int x = 0; x < 4; x++)
-				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && tetromino.x + x + 1== PLAYFIELD_X|| shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x + 1] == 'o')
+				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && tetromino.x + x + 1== PLAYFIELD_X|| shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x + 1] == '#')
 					return false;
 		return true;
 		break;
 	case down:
 		for (int y = 0; y < 4; y++)
 			for (int x = 0; x < 4; x++)
-				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && tetromino.y + y + 1 == PLAYFIELD_Y || shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o' && playfieldArr[tetromino.y + y + 1][tetromino.x + x] == 'o')
+				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && tetromino.y + y + 1 == PLAYFIELD_Y || shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && playfieldArr[tetromino.y + y + 1][tetromino.x + x] == '#')
 					return false;
 		return true;
 		break;
@@ -165,7 +190,7 @@ bool canMove(piece tetromino, direction dir) //this function checks if you can m
 	
 }
 
-bool canRotate(piece tetromino, direction rotation)
+bool canRotate(piece tetromino, direction rotation) //this function checks if you can rotate the piece in a specified direction
 {
 	switch (rotation)
 	{
@@ -176,7 +201,7 @@ bool canRotate(piece tetromino, direction rotation)
 			{
 				for (int x = 0; x < 4; x++)
 				{
-					if (shapeArr[tetromino.shape][tetromino.rotation + 1][y][x] == 'o' && (tetromino.x + x + 1 == 0 || tetromino.x + x == PLAYFIELD_X || tetromino.y + y == PLAYFIELD_Y) || shapeArr[tetromino.shape][tetromino.rotation + 1][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x] == 'o')
+					if (shapeArr[tetromino.shape][tetromino.rotation + 1][y][x] == '#' && (tetromino.x + x + 1 == 0 || tetromino.x + x == PLAYFIELD_X || tetromino.y + y == PLAYFIELD_Y) || shapeArr[tetromino.shape][tetromino.rotation + 1][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x] == '#')
 					{
 						return false;
 					}
@@ -189,7 +214,7 @@ bool canRotate(piece tetromino, direction rotation)
 			{
 				for (int x = 0; x < 4; x++)
 				{
-					if (shapeArr[tetromino.shape][0][y][x] == 'o' && (tetromino.x + x + 1 == 0 || tetromino.x + x == PLAYFIELD_X || tetromino.y + y == PLAYFIELD_Y) || shapeArr[tetromino.shape][0][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x] == 'o')
+					if (shapeArr[tetromino.shape][0][y][x] == '#' && (tetromino.x + x + 1 == 0 || tetromino.x + x == PLAYFIELD_X || tetromino.y + y == PLAYFIELD_Y) || shapeArr[tetromino.shape][0][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x] == '#')
 					{
 						return false;
 					}
@@ -205,7 +230,7 @@ bool canRotate(piece tetromino, direction rotation)
 			{
 				for (int x = 0; x < 4; x++)
 				{
-					if (shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == 'o' && (tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y ||tetromino.x + x == PLAYFIELD_X) || shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x] == 'o')
+					if (shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == '#' && (tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y ||tetromino.x + x == PLAYFIELD_X) || shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x] == '#')
 					{
 						return false;
 					}
@@ -218,7 +243,7 @@ bool canRotate(piece tetromino, direction rotation)
 			{
 				for (int x = 0; x < 4; x++)
 				{
-					if (shapeArr[tetromino.shape][3][y][x] == 'o' && (tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y || tetromino.x + x == PLAYFIELD_X) || shapeArr[tetromino.shape][3][y][x] == 'o' && playfieldArr[tetromino.y + y][tetromino.x + x] == 'o')
+					if (shapeArr[tetromino.shape][3][y][x] == '#' && (tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y || tetromino.x + x == PLAYFIELD_X) || shapeArr[tetromino.shape][3][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x] == '#')
 					{
 						return false;
 					}
@@ -235,19 +260,21 @@ bool canRotate(piece tetromino, direction rotation)
 
 void startGame() 
 {
+	piece tetromino;
 	tetromino.y = -1;
 	tetromino.x = 3;
+	tetromino.rotation = 0;
 	newPiece(&tetromino);
 	block(tetromino);
 	drawPlayfield();
-	time(&lastFall);
+	lastFall =	steady_clock::now();
+	now =		steady_clock::now();
 	isPlay = TRUE;
-
 	while (isPlay)
 	{
-
-		fall();
-		logic();
+		fall(&tetromino);
+		logic(&tetromino);
+		lock(&tetromino);
 
 		updatePlayfield();
 	}
@@ -267,7 +294,7 @@ void clearPiece(piece tetromino)
 {
 	for (int y = 0; y < 4; y++)
 		for (int x = 0; x < 4; x++)
-			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o')
+			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#')
 				playfieldArr[tetromino.y + y][tetromino.x + x] = ' ';
 }
 
@@ -275,19 +302,30 @@ void block(piece tetromino)
 {
 	for (int y = 0; y < 4; y++)
 		for (int x = 0; x < 4; x++)
-			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == 'o')
+			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#')
 				playfieldArr[tetromino.y + y][tetromino.x + x] = shapeArr[tetromino.shape][tetromino.rotation][y][x];
 }
 
-
 void newPiece(piece *tetromino)
 {
-	tetromino -> y = -1;
-	tetromino -> x = 3;
+	tetromino->y = -1;
+	tetromino->x = 3;
+	tetromino->rotation = 0;
+	srand(time(0));
 
-	std::srand(time(0));
-
-	tetromino -> shape = rand() % 7;
+	tetromino->shape = rand() % 7;
 
 	return;
+}
+
+void clearLines(int tetrominoY)
+{
+	for (int y = 0; y < 4; y++)
+		if (playfieldArr[tetrominoY + y][0] == '#' && playfieldArr[tetrominoY + y][1] == '#' && playfieldArr[tetrominoY + y][2] == '#' && playfieldArr[tetrominoY + y][3] == '#' && playfieldArr[tetrominoY + y][4] == '#' && playfieldArr[tetrominoY + y][5] == '#' && playfieldArr[tetrominoY + y][6] == '#' && playfieldArr[tetrominoY + y][7] == '#' && playfieldArr[tetrominoY + y][8] == '#' && playfieldArr[tetrominoY + y][9] == '#')
+			for (int x = 0; x < PLAYFIELD_X; x++)
+			{
+				playfieldArr[tetrominoY + y][x] = ' ';
+				for (int i = tetrominoY + y; i > 0; i--)
+					playfieldArr[i][x] = playfieldArr[i - 1][x];
+			}
 }

@@ -84,14 +84,4 @@ void checkWindow()
 	return;
 }
 
-void clearLines(int tetrominoY)
-{
-	for (int y = 0; y < 4; y++)
-		if (playfieldArr[tetrominoY + y][0] == 'o' && playfieldArr[tetrominoY + y][1] == 'o' && playfieldArr[tetrominoY + y][2] == 'o'  && playfieldArr[tetrominoY + y][3] == 'o'  && playfieldArr[tetrominoY + y][4] == 'o'  && playfieldArr[tetrominoY + y][5] == 'o' && playfieldArr[tetrominoY + y][6] == 'o' && playfieldArr[tetrominoY + y][7] == 'o' && playfieldArr[tetrominoY + y][8] == 'o' && playfieldArr[tetrominoY + y][9] == 'o')
-			for (int x = 0; x < PLAYFIELD_X; x++)
-			{
-				playfieldArr[tetrominoY + y][x] = ' ';	
-				for (int i = tetrominoY + y; i > 0; i--)
-					playfieldArr[i][x] = playfieldArr[i - 1][x];
-			}
-}			
+			
