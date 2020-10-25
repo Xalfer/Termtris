@@ -8,9 +8,5 @@
 void drawPlayfield();
 void updatePlayfield();
 void clearPlayfield();
-void logic();
-void fall();
-void clearLines(int);
 
-extern bool isPlay;
 extern char playfieldArr[PLAYFIELD_Y][PLAYFIELD_X];

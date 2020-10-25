@@ -28,12 +28,13 @@ enum direction
 };
 
 steady_clock::time_point lastFall, shouldPlace, now;
-piece tetromino;
+
 
 
 bool canMove(piece, direction);
 bool canRotate(piece, direction);
 void clearPiece(piece);
+void clearLines(int);
 void block(piece);
 void newPiece(piece*);
 
@@ -42,7 +43,9 @@ void logic(piece *tetromino)
 
 	int input = 0;
 	if (_kbhit())
+	{
 		input = getch();
+	}
 	
 	switch (input)
 	{
@@ -50,7 +53,9 @@ void logic(piece *tetromino)
 		clearPiece(*tetromino);
 
 		if (canMove(*tetromino, left))
+		{
 			tetromino->x--;
+		}
 
 		block(*tetromino);
 		break;
@@ -58,7 +63,9 @@ void logic(piece *tetromino)
 		clearPiece(*tetromino);
 
 		if (canMove(*tetromino, right))
+		{
 			tetromino->x++;
+		}
 
 		block(*tetromino);
 		break;
@@ -66,7 +73,9 @@ void logic(piece *tetromino)
 		clearPiece(*tetromino);
 
 		if (canMove(*tetromino, down))
+		{
 			tetromino->y++;
+		}
 
 		block(*tetromino);
 		break;
@@ -75,9 +84,13 @@ void logic(piece *tetromino)
 		if (canRotate(*tetromino, right))
 		{
 			if (tetromino->rotation > 0)
+			{
 				tetromino->rotation--;
+			}
 			else
+			{
 				tetromino->rotation = 3;
+			}
 		}
 		block(*tetromino);
 		break;
@@ -87,9 +100,13 @@ void logic(piece *tetromino)
 		if (canRotate(*tetromino, left))
 		{
 			if (tetromino->rotation < 3)
+			{
 				tetromino->rotation++;
+			}
 			else
+			{
 				tetromino->rotation = 0;
+			}
 		}
 		block(*tetromino);
 		break;
@@ -107,23 +124,21 @@ void logic(piece *tetromino)
 	return;
 }
 
-void fall() 
+void fall(piece* tetromino) 
 {
-	clearPiece(tetromino);
+	clearPiece(*tetromino);
 	
 	now = steady_clock::now();
 	duration<float, milli> diffTime = now - lastFall;
-	if (diffTime >= 1000ms && canMove(tetromino, down))
+	if (diffTime >= 1000ms && canMove(*tetromino, down))
 	{
-
-		tetromino.y++;
-
+		tetromino->y++;
 
 		lastFall = steady_clock::now();
 		return;
 	}
 	
-	block(tetromino);
+	block(*tetromino);
 	return;
 }
 
@@ -153,6 +168,7 @@ void lock(piece *tetromino)
 		{
 			shouldPlace = steady_clock::now();
 		}
+		
 		block(*tetromino);
 	}
 	return;
@@ -164,30 +180,45 @@ bool canMove(piece tetromino, direction dir) //this function checks if you can m
 	{
 	case left:
 		for (int y = 0; y < 4; y++)
+		{
 			for (int x = 0; x < 4; x++)
-				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && tetromino.x  + x == 0 || shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x - 1] == '#')
+			{
+				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && tetromino.x + x == 0 || shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x - 1] == '#')
+				{
 					return false;
-		return true;
+				}
+			}
+		}
 		break;
 	case right:
 		for (int y = 0; y < 4; y++)
+		{
 			for (int x = 0; x < 4; x++)
-				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && tetromino.x + x + 1== PLAYFIELD_X|| shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x + 1] == '#')
+			{
+				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && tetromino.x + x + 1 == PLAYFIELD_X || shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x + 1] == '#')
+				{
 					return false;
-		return true;
+				}
+			}
+		}
 		break;
 	case down:
 		for (int y = 0; y < 4; y++)
+		{
 			for (int x = 0; x < 4; x++)
+			{
 				if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && tetromino.y + y + 1 == PLAYFIELD_Y || shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#' && playfieldArr[tetromino.y + y + 1][tetromino.x + x] == '#')
+				{
 					return false;
-		return true;
+				}
+			}
+		}
 		break;
 	default:
 		return false;
 		break;
 	}
-	
+	return true;
 }
 
 bool canRotate(piece tetromino, direction rotation) //this function checks if you can rotate the piece in a specified direction
@@ -221,7 +252,6 @@ bool canRotate(piece tetromino, direction rotation) //this function checks if yo
 				}
 			}
 		}
-		return true;
 		break;
 	case right:
 		if (tetromino.rotation > 0)
@@ -230,7 +260,7 @@ bool canRotate(piece tetromino, direction rotation) //this function checks if yo
 			{
 				for (int x = 0; x < 4; x++)
 				{
-					if (shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == '#' && (tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y ||tetromino.x + x == PLAYFIELD_X) || shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x] == '#')
+					if (shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == '#' && (tetromino.x + x + 1 == 0 || tetromino.y + y == PLAYFIELD_Y || tetromino.x + x == PLAYFIELD_X) || shapeArr[tetromino.shape][tetromino.rotation - 1][y][x] == '#' && playfieldArr[tetromino.y + y][tetromino.x + x] == '#')
 					{
 						return false;
 					}
@@ -249,18 +279,20 @@ bool canRotate(piece tetromino, direction rotation) //this function checks if yo
 					}
 				}
 			}
+			
 		}
-		return true;
 		break;
 	default:
 		return false;
 		break;
 	}
+	return true;
 }
 
 void startGame() 
 {
-	
+	clearPlayfield();
+	piece tetromino;
 	tetromino.y = -1;
 	tetromino.x = 3;
 	tetromino.rotation = 0;
@@ -272,7 +304,7 @@ void startGame()
 	isPlay = TRUE;
 	while (isPlay)
 	{
-		fall();
+		fall(&tetromino);
 		logic(&tetromino);
 		lock(&tetromino);
 
@@ -286,24 +318,38 @@ void clearPlayfield() //this function is used to clear the playfield
 	for (int y = 0; y < PLAYFIELD_Y; y++)
 	{
 		for (int x = 0; x < PLAYFIELD_X; x++)
+		{
 			playfieldArr[y][x] = ' ';
+		}
 	}
 }
 
 void clearPiece(piece tetromino)
 {
 	for (int y = 0; y < 4; y++)
+	{
 		for (int x = 0; x < 4; x++)
+		{
 			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#')
+			{
 				playfieldArr[tetromino.y + y][tetromino.x + x] = ' ';
+			}
+		}
+	}
 }
 
 void block(piece tetromino)
 {
 	for (int y = 0; y < 4; y++)
+	{
 		for (int x = 0; x < 4; x++)
+		{
 			if (shapeArr[tetromino.shape][tetromino.rotation][y][x] == '#')
+			{
 				playfieldArr[tetromino.y + y][tetromino.x + x] = shapeArr[tetromino.shape][tetromino.rotation][y][x];
+			}
+		}
+	}
 }
 
 void newPiece(piece *tetromino)
@@ -321,11 +367,17 @@ void newPiece(piece *tetromino)
 void clearLines(int tetrominoY)
 {
 	for (int y = 0; y < 4; y++)
+	{
 		if (playfieldArr[tetrominoY + y][0] == '#' && playfieldArr[tetrominoY + y][1] == '#' && playfieldArr[tetrominoY + y][2] == '#' && playfieldArr[tetrominoY + y][3] == '#' && playfieldArr[tetrominoY + y][4] == '#' && playfieldArr[tetrominoY + y][5] == '#' && playfieldArr[tetrominoY + y][6] == '#' && playfieldArr[tetrominoY + y][7] == '#' && playfieldArr[tetrominoY + y][8] == '#' && playfieldArr[tetrominoY + y][9] == '#')
+		{
 			for (int x = 0; x < PLAYFIELD_X; x++)
 			{
 				playfieldArr[tetrominoY + y][x] = ' ';
 				for (int i = tetrominoY + y; i > 0; i--)
+				{
 					playfieldArr[i][x] = playfieldArr[i - 1][x];
+				}
 			}
+		}
+	}
 }

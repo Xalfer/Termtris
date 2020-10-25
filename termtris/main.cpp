@@ -10,6 +10,9 @@ int main()
 	keypad(stdscr,true);
 	curs_set(0);
 	
+
+	//start_color();
+	
 	checkWindow();
 
 	startGame();
