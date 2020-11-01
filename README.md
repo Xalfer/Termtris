@@ -7,4 +7,4 @@ That I am a beginner and don't have much expirience.
 * left and right arrows to move the piece
 * down arrow to soft drop
 * C to rotate clockwise
-* Z to rotate counter clockwise
+* Z to rotate counterclockwise
