@@ -1,4 +1,3 @@
-#include <time.h>
 #include "main.h" 
 
 int main()
@@ -10,7 +9,6 @@ int main()
 	keypad(stdscr,true);
 	curs_set(0);
 	
-
 	//start_color();
 	
 	checkWindow();
@@ -24,8 +22,6 @@ int main()
 	refresh();
 	getch();
 
-	
-	
 	endwin();
 	return 0;
 }

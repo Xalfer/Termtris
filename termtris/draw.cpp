@@ -1,5 +1,8 @@
-﻿#include "header.h"
+﻿#include <curses.h>
 #include "shapes.cpp"
+
+#define playfieldY 20
+#define playfieldX 10
 
 struct wins
 {
@@ -8,7 +11,7 @@ struct wins
 	WINDOW* win;
 };
 
-char playfieldArr[PLAYFIELD_Y][PLAYFIELD_X] = {};
+char playfieldArr[playfieldY][playfieldX] = {};
 
 wins playfield;
 
@@ -23,7 +26,7 @@ void drawPlayfield() //this function is used for resizing and drawing the window
 	//this handles resizing the border for the playfield
 	border.height = LINES;
 	
-	while (border.height % PLAYFIELD_Y != 2)
+	while (border.height % playfieldY != 2)
 	{
 		border.height--;
 	}
@@ -37,7 +40,7 @@ void drawPlayfield() //this function is used for resizing and drawing the window
 
 	border.win = newwin(border.height, border.width, border.pos_y, border.pos_x);
 
-	box(border.win, 0, 0);
+	wborder(border.win, ACS_VLINE, ACS_VLINE, ' ', ACS_HLINE, ACS_VLINE, ACS_VLINE, ACS_LLCORNER, ACS_LRCORNER);
 
 
 	//this makes the playfield window
@@ -56,11 +59,11 @@ void drawPlayfield() //this function is used for resizing and drawing the window
 void updatePlayfield() //this function is used for updating the playfield
 {
 
-	const int blockSize  = playfield.height / PLAYFIELD_Y;
+	const int blockSize  = playfield.height / playfieldY;
 	
-	for (short y = 0; y < PLAYFIELD_Y * blockSize; y++) 
+	for (short y = 0; y < playfieldY * blockSize; y++) 
 	{
-		for (short x = 0; x < PLAYFIELD_X * blockSize; x++)
+		for (short x = 0; x < playfieldX * blockSize; x++)
 		{
 			//attron(COLOR_PAIR(2));
 			
