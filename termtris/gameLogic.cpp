@@ -1,38 +1,13 @@
-#include <conio.h>
-#include <cstdlib>
-#include <chrono>
-#include "logic.h"
+#include "gameLogic.h"
 #include "shapes.cpp"
 
-#define KEY_ESC		0x01b
-#define KEY_C		0x63
-#define KEY_Z		0x7a
-#define KEY_SPACE	0x20 
 
 using namespace std;
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-struct piece
-{
-	int shape = 0, rotation = 0, y = 0, x = 0;
-};
 
-enum direction 
-{
-	down,
-	left,
-	right
-};
-
-bool canMove(piece, direction);
-bool canRotate(piece, direction);
-void clearPiece(piece);
-void clearLines(int);
-void block(piece*);
-void newPiece(piece*);
-
-void logic(piece *tetromino, bool *isPlay)
+void input(piece *tetromino, bool *isPlay)
 {
 
 	int input = 0;
@@ -44,37 +19,24 @@ void logic(piece *tetromino, bool *isPlay)
 	switch (input)
 	{
 	case KEY_LEFT:
-		clearPiece(*tetromino);
-
 		if (canMove(*tetromino, left))
 		{
 			tetromino->x--;
 		}
-
-		block(tetromino);
 		break;
 	case KEY_RIGHT:
-		clearPiece(*tetromino);
-
 		if (canMove(*tetromino, right))
 		{
 			tetromino->x++;
 		}
-
-		block(tetromino);
 		break;
 	case KEY_DOWN:
-		clearPiece(*tetromino);
-
 		if (canMove(*tetromino, down))
 		{
 			tetromino->y++;
 		}
-
-		block(tetromino);
 		break;
 	case KEY_C:
-		clearPiece(*tetromino);
 		if (canRotate(*tetromino, right))
 		{
 			if (tetromino->rotation > 0)
@@ -86,11 +48,8 @@ void logic(piece *tetromino, bool *isPlay)
 				tetromino->rotation = 3;
 			}
 		}
-		block(tetromino);
 		break;
 	case KEY_Z:
-		clearPiece(*tetromino);
-
 		if (canRotate(*tetromino, left))
 		{
 			if (tetromino->rotation < 3)
@@ -102,7 +61,6 @@ void logic(piece *tetromino, bool *isPlay)
 				tetromino->rotation = 0;
 			}
 		}
-		block(tetromino);
 		break;
 	case KEY_ESC:
 		*isPlay = false;
@@ -115,22 +73,18 @@ void logic(piece *tetromino, bool *isPlay)
 
 void fall(piece* tetromino, steady_clock::time_point *fall)
 {
-	clearPiece(*tetromino);
-	
 	duration<float, milli> diffTime = steady_clock::now() - *fall;
 	if (diffTime >= 1000ms && canMove(*tetromino, down))
 	{
 		tetromino->y++;
-		
+
 		*fall = steady_clock::now();
 		return;
 	}
-	
-	block(tetromino);
 	return;
 }
 
-void lock(piece *tetromino, steady_clock::time_point *lastPlace, bool *shouldLock) //this function locks the piece
+void lock(piece *tetromino, steady_clock::time_point *lastPlace, bool *shouldLock) //this function locks the piece 
 {
 	duration<float, milli> diffTime = steady_clock::now() - *lastPlace;
 
@@ -143,12 +97,9 @@ void lock(piece *tetromino, steady_clock::time_point *lastPlace, bool *shouldLoc
 		newPiece(&*tetromino);
 		*shouldLock = false;
 		*lastPlace = steady_clock::now();
-
 	}
 	else
 	{
-		clearPiece(*tetromino);
-		
 		if (!canMove(*tetromino, down))
 		{
 			*shouldLock = true;
@@ -157,12 +108,7 @@ void lock(piece *tetromino, steady_clock::time_point *lastPlace, bool *shouldLoc
 		{
 			*lastPlace = steady_clock::now();
 		}
-		
-		block(tetromino);
 	}
-
-
-
 	return;
 }
 
@@ -295,32 +241,45 @@ void startGame()
 	block(tetromino);
 	drawPlayfield();
 	
-	steady_clock::time_point *lastFall		= new steady_clock::time_point;
-	steady_clock::time_point *lastPlace		= new steady_clock::time_point;
-	*lastFall  = steady_clock::now();
-	*lastPlace = steady_clock::now();
-
 	bool *shouldLock = new bool;
-	*shouldLock = false;
-
 	bool *isPlay = new bool;
+
+	*shouldLock = false;
 	*isPlay = true;
 
-	while (*isPlay)
+	steady_clock::time_point *lastLock		= new steady_clock::time_point;
+	steady_clock::time_point *lastFall		= new steady_clock::time_point;
+	
+	*lastLock = steady_clock::now();
+	*lastFall  = steady_clock::now();
+
+	while (*isPlay) //main game loop
 	{
+		clearPiece(*tetromino);
+
+		input(tetromino, isPlay);
 		
 		fall(tetromino, lastFall);
 		
-		logic(tetromino, isPlay);
-		
-		lock(tetromino, lastPlace, shouldLock);
+		lock(tetromino, lastLock, shouldLock);
+
+		block(tetromino);
 
 		updatePlayfield();
 	}
+
+	delete tetromino;
+
+	delete lastFall;
+	delete lastLock;
+
+	delete shouldLock;
+	delete isPlay;
+
 	return;
 }
 
-void clearPlayfield() //this function is used to clear the playfield
+void clearPlayfield() //this function is used to clear the whole playfield
 {
 	for (int y = 0; y < playfieldY; y++)
 	{
@@ -345,7 +304,7 @@ void clearPiece(piece tetromino)
 	}
 }
 
-void block(piece *tetromino)
+void block(piece *tetromino) //this function puts the piece in playfieldArr
 {
 	for (int y = 0; y < 4; y++)
 	{
@@ -364,6 +323,7 @@ void newPiece(piece *tetromino)
 	tetromino->y = -1;
 	tetromino->x = 3;
 	tetromino->rotation = 0;
+	
 	srand(time(0));
 
 	tetromino->shape = rand() % 7;

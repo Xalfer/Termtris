@@ -4,7 +4,7 @@
 #define playfieldY 20
 #define playfieldX 10
 
-struct wins
+struct win
 {
 	int height, width, pos_y, pos_x;
 
@@ -13,14 +13,14 @@ struct wins
 
 char playfieldArr[playfieldY][playfieldX] = {};
 
-wins playfield;
+win playfield;
 
 
 void drawPlayfield() //this function is used for resizing and drawing the windows
 {
 	border(ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 
-	wins border;
+	win border;
 
 
 	//this handles resizing the border for the playfield

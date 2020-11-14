@@ -9,13 +9,12 @@ int main()
 	keypad(stdscr,true);
 	curs_set(0);
 	
-	//start_color();
-	
+
 	checkWindow();
 
 	startGame();
 	
-	//some random stuff so the window won't close right after you hit esc
+	//some random stuff so the window won't close right after you hit ESC
 	clear();
 	printw("hello world!");
 
