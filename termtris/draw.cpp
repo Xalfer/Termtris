@@ -13,15 +13,15 @@ struct win
 
 char playfieldArr[playfieldY][playfieldX] = {};
 
-win playfield;
 
 
-void drawPlayfield() //this function is used for resizing and drawing the windows
+
+void drawPlayfield(win* playfield) //this function is used for resizing and drawing the windows
 {
 	border(ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 
-	win border;
 
+	win border;
 
 	//this handles resizing the border for the playfield
 	border.height = LINES;
@@ -44,23 +44,25 @@ void drawPlayfield() //this function is used for resizing and drawing the window
 
 
 	//this makes the playfield window
-	playfield.height = border.height - 2;
-	playfield.width = border.width - 2;
-	playfield.pos_y = border.pos_y + 1;
-	playfield.pos_x = border.pos_x + 1;
+	playfield->height = border.height - 2;
+	playfield->width = border.width - 2;
+	playfield->pos_y = border.pos_y + 1;
+	playfield->pos_x = border.pos_x + 1;
 
-	playfield.win = newwin(playfield.height, playfield.width, playfield.pos_y, playfield.pos_x);
+	playfield->win = newwin(playfield->height, playfield->width, playfield->pos_y, playfield->pos_x);
 
 	refresh();
 	wrefresh(border.win);
-	wrefresh(playfield.win);
+	wrefresh(playfield->win);
 }
 
-void updatePlayfield() //this function is used for updating the playfield
+void updatePlayfield(win playfield) //this function is used for updating the playfield
 {
 
 	const int blockSize  = playfield.height / playfieldY;
-	
+	//const int blockSize = 2;
+
+
 	for (short y = 0; y < playfieldY * blockSize; y++) 
 	{
 		for (short x = 0; x < playfieldX * blockSize; x++)
@@ -68,7 +70,7 @@ void updatePlayfield() //this function is used for updating the playfield
 			//attron(COLOR_PAIR(2));
 			
 			mvwprintw(playfield.win, y, x, "%c", playfieldArr[y / blockSize][x / blockSize]);
-			
+
 			//attroff(COLOR_PAIR(2));
 		}
 	}	

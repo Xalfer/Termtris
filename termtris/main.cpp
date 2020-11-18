@@ -1,4 +1,7 @@
-#include "main.h" 
+#include <curses.h>
+
+void startGame();
+void checkWindow();
 
 int main()
 {
