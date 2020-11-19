@@ -5,8 +5,8 @@
 #include <cstdlib>
 #include <chrono>
 
-#define playfieldY 20
-#define playfieldX 10
+#include "win.h"
+
 
 #define KEY_ESC		0x01b
 #define KEY_C		0x63
@@ -83,13 +83,6 @@ public:
 
 };
 
-struct win
-{
-	int height, width, pos_y, pos_x;
-
-	WINDOW* win;
-};
-
 enum direction
 {
 	down,
@@ -97,8 +90,8 @@ enum direction
 	right
 };
 
-void drawPlayfield(win*);
-void updatePlayfield(win);
+void drawPlayfield(win*[2]);
+void updatePlayfield(win*);
 void clearPlayfield();
 bool canMove(piece*, direction);
 bool canRotate(piece*, direction);
@@ -106,4 +99,4 @@ void clearPiece(piece*);
 void clearLines(int);
 void block(piece*);
 
-extern char playfieldArr[playfieldY][playfieldX];
+

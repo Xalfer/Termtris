@@ -226,17 +226,19 @@ void startGame()
 {
 	clearPlayfield();
 	
-	win playfield;
+	win* winArr[2];
+	winArr[0] = new win;
+	winArr[1] = new win;
 
 	piece *tetromino = new piece;
-	
+		
 	tetromino->y = -1;
 	tetromino->x = 3;
 	tetromino->rotation = 0;
 	
 	tetromino->newPiece();
 	block(tetromino);
-	drawPlayfield(&playfield);
+	drawPlayfield(winArr);
 	
 	
 	bool *isPlay = new bool;
@@ -257,7 +259,7 @@ void startGame()
 
 		block(tetromino);
 
-		updatePlayfield(playfield);
+		winArr[0]->update();
 	}
 
 	delete tetromino;
@@ -317,6 +319,7 @@ void clearLines(int tetrominoY)
 			if (playfieldArr[tetrominoY + y][x] == ' ' || tetrominoY + y >= playfieldY)
 			{
 				isFullLine = false;
+				break;
 			}
 		}
 

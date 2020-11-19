@@ -1,81 +1,76 @@
 ﻿#include <curses.h>
+
 #include "shapes.cpp"
+#include "win.h"
 
-#define playfieldY 20
-#define playfieldX 10
 
-struct win
-{
-	int height, width, pos_y, pos_x;
 
-	WINDOW* win;
-};
+
 
 char playfieldArr[playfieldY][playfieldX] = {};
 
 
-
-
-void drawPlayfield(win* playfield) //this function is used for resizing and drawing the windows
+void drawPlayfield(win* winArr[2]) //this function is used for resizing and drawing the windows
 {
 	border(ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 
 
-	win border;
-
 	//this handles resizing the border for the playfield
-	border.height = LINES;
+	win playfieldBorder;
+
+	playfieldBorder.height = LINES;
 	
-	while (border.height % playfieldY != 2)
+	while (playfieldBorder.height % playfieldY != 2)
 	{
-		border.height--;
+		playfieldBorder.height--;
 	}
 
-	border.width = (border.height / 2) + 1;
+	playfieldBorder.width = (playfieldBorder.height / 2) + 1;
 
 
-	border.pos_y = (LINES - border.height) / 2;
-	border.pos_x = (COLS - border.width) / 2;
+	playfieldBorder.posY = (LINES - playfieldBorder.height) / 2;
+	playfieldBorder.posX = (COLS - playfieldBorder.width) / 2;
 
 
-	border.win = newwin(border.height, border.width, border.pos_y, border.pos_x);
+	playfieldBorder.win = newwin(playfieldBorder.height, playfieldBorder.width, playfieldBorder.posY, playfieldBorder.posX);
 
-	wborder(border.win, ACS_VLINE, ACS_VLINE, ' ', ACS_HLINE, ACS_VLINE, ACS_VLINE, ACS_LLCORNER, ACS_LRCORNER);
+	wborder(playfieldBorder.win, ACS_VLINE, ACS_VLINE, ' ', ACS_HLINE, ACS_VLINE, ACS_VLINE, ACS_LLCORNER, ACS_LRCORNER);
 
 
 	//this makes the playfield window
-	playfield->height = border.height - 2;
-	playfield->width = border.width - 2;
-	playfield->pos_y = border.pos_y + 1;
-	playfield->pos_x = border.pos_x + 1;
+	winArr[0]->height	= playfieldBorder.height - 2;
+	winArr[0]->width	= playfieldBorder.width - 2;
+	winArr[0]->posY		= playfieldBorder.posY + 1;
+	winArr[0]->posX		= playfieldBorder.posX + 1;
 
-	playfield->win = newwin(playfield->height, playfield->width, playfield->pos_y, playfield->pos_x);
+	winArr[0]->win = newwin(winArr[0]->height, winArr[0]->width, winArr[0]->posY, winArr[0]->posX);
+
+
+	//this makes the border for the preview window
+	win previewBorder;
+
+	previewBorder.height	= (4 * 4 * winArr[0]->height / playfieldY) + 2; //this work like (number of pieces * the size of the piece * the size of the individual blocks)
+	previewBorder.width		= (1 * 4 * winArr[0]->width / playfieldX) + 2;
+	previewBorder.posY		= playfieldBorder.posY;
+	previewBorder.posX		= playfieldBorder.posX + playfieldBorder.width + 1;
+
+	previewBorder.win = newwin(previewBorder.height, previewBorder.width, previewBorder.posY, previewBorder.posX);
+
+	box(previewBorder.win, 0, 0);
+
+	//this makes the preview window
+	winArr[1]->height	= previewBorder.height - 2;
+	winArr[1]->width	= previewBorder.width - 2;
+	winArr[1]->posY		= previewBorder.posY + 1;
+	winArr[1]->posX		= previewBorder.posX + 1;
+
+	winArr[1]->win = newwin(winArr[1]->height, winArr[1]->width, winArr[1]->posY, winArr[1]->posX);
 
 	refresh();
-	wrefresh(border.win);
-	wrefresh(playfield->win);
-}
-
-void updatePlayfield(win playfield) //this function is used for updating the playfield
-{
-
-	const int blockSize  = playfield.height / playfieldY;
-	//const int blockSize = 2;
-
-
-	for (short y = 0; y < playfieldY * blockSize; y++) 
-	{
-		for (short x = 0; x < playfieldX * blockSize; x++)
-		{
-			//attron(COLOR_PAIR(2));
-			
-			mvwprintw(playfield.win, y, x, "%c", playfieldArr[y / blockSize][x / blockSize]);
-
-			//attroff(COLOR_PAIR(2));
-		}
-	}	
-	wrefresh(playfield.win);
-	refresh();
+	wrefresh(playfieldBorder.win);
+	wrefresh(previewBorder.win);
+	wrefresh(winArr[0]->win);
+	wrefresh(winArr[1]->win);
 }
 
 void checkWindow()
